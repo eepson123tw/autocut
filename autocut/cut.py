@@ -1,9 +1,13 @@
+# cut_fix.py
+# 将此代码保存为一个新文件，然后替换原来的cut.py文件
+
 import logging
 import os
 import re
 
 import srt
-from moviepy import editor
+# 修改导入方式
+import moviepy.editor as editor
 
 from . import utils
 
@@ -12,6 +16,8 @@ from . import utils
 class Merger:
     def __init__(self, args):
         self.args = args
+        # 添加进度回调函数
+        self.on_progress = None
 
     def write_md(self, videos):
         md = utils.MD(self.args.inputs[0], self.args.encoding)
@@ -64,9 +70,16 @@ class Merger:
 
         merged = editor.concatenate_videoclips(videos)
         fn = os.path.splitext(md_fn)[0] + "_merged.mp4"
+        
+        # 添加进度回调支持
+        def progress_callback(t):
+            if self.on_progress:
+                self.on_progress(t, merged.duration)
+            
         merged.write_videofile(
-            fn, audio_codec="aac", bitrate=self.args.bitrate
-        )  # logger=None,
+            fn, audio_codec="aac", bitrate=self.args.bitrate, 
+            logger="bar", callback=progress_callback
+        )
         logging.info(f"Saved merged video to {fn}")
 
 
@@ -74,6 +87,8 @@ class Merger:
 class Cutter:
     def __init__(self, args):
         self.args = args
+        # 添加进度回调函数
+        self.on_progress = None
 
     def run(self):
         fns = {"srt": None, "media": None, "md": None}
@@ -130,16 +145,9 @@ class Cutter:
         else:
             media = editor.AudioFileClip(fns["media"])
 
-        # Add a fade between two clips. Not quite necessary. keep code here for reference
-        # fade = 0
-        # segments = _expand_segments(segments, fade, 0, video.duration)
-        # clips = [video.subclip(
-        #         s['start'], s['end']).crossfadein(fade) for s in segments]
-        # final_clip = editor.concatenate_videoclips(clips, padding = -fade)
-
         clips = [media.subclip(s["start"], s["end"]) for s in segments]
         if is_video_file:
-            final_clip: editor.VideoClip = editor.concatenate_videoclips(clips)
+            final_clip = editor.concatenate_videoclips(clips)
             logging.info(
                 f"Reduced duration from {media.duration:.1f} to {final_clip.duration:.1f}"
             )
@@ -148,19 +156,32 @@ class Cutter:
             final_clip = final_clip.without_audio().set_audio(aud)
             final_clip = final_clip.fx(editor.afx.audio_normalize)
 
+            # 添加进度回调支持
+            def progress_callback(t):
+                if self.on_progress:
+                    self.on_progress(t, final_clip.duration)
+                    
             # an alternative to birate is use crf, e.g. ffmpeg_params=['-crf', '18']
             final_clip.write_videofile(
-                output_fn, audio_codec="aac", bitrate=self.args.bitrate
+                output_fn, audio_codec="aac", bitrate=self.args.bitrate,
+                logger="bar", callback=progress_callback
             )
         else:
-            final_clip: editor.AudioClip = editor.concatenate_audioclips(clips)
+            final_clip = editor.concatenate_audioclips(clips)
             logging.info(
                 f"Reduced duration from {media.duration:.1f} to {final_clip.duration:.1f}"
             )
 
             final_clip = final_clip.fx(editor.afx.audio_normalize)
+            
+            # 添加进度回调支持
+            def progress_callback(t):
+                if self.on_progress:
+                    self.on_progress(t, final_clip.duration)
+                    
             final_clip.write_audiofile(
-                output_fn, codec="libmp3lame", fps=44100, bitrate=self.args.bitrate
+                output_fn, codec="libmp3lame", fps=44100, bitrate=self.args.bitrate,
+                logger="bar", callback=progress_callback
             )
 
         media.close()
