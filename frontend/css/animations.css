@@ -1,0 +1,37 @@
+/* animations.css - Animations and transitions */
+
+/* Subtitle highlight animation */
+@keyframes highlight {
+    0% { background-color: rgba(79, 70, 229, 0.1); }
+    50% { background-color: rgba(79, 70, 229, 0.3); }
+    100% { background-color: rgba(79, 70, 229, 0.1); }
+}
+
+.subtitle-highlight {
+    animation: highlight 2s ease-in-out;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.component-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Fade transition for modals */
+.fade-in {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.fade-in.active {
+    opacity: 1;
+}
+
+/* Hide transition */
+.hidden {
+    display: none !important;
+}

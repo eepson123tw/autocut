@@ -1,0 +1,63 @@
+/* layout.css - Styles for layout structures */
+
+/* Basic container layouts */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Main page layout */
+.min-h-screen {
+    min-height: 100vh;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+/* Modal layouts */
+.modal-container {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    max-width: 90%;
+    width: 100%;
+    padding: 1.5rem;
+    margin: 1rem;
+}
+
+/* Timeline layout */
+.timeline-container {
+    position: relative;
+    overflow-x: auto;
+    height: 8rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+}
+
+.timeline-content {
+    height: 100%;
+    position: relative;
+    min-width: 100%;
+}
+
+.timeline-cursor {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: #ef4444;
+    pointer-events: none;
+    z-index: 5;
+}
